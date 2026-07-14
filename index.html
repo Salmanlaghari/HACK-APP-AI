@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Hack AI</title>
+<meta name="theme-color" content="#0A0B0F">
+<link rel="manifest" href="manifest.json">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0A0B0F;
+    --surface:#14161C;
+    --surface-2:#1B1E26;
+    --border:#262A34;
+    --gold:#C9A96A;
+    --gold-soft:rgba(201,169,106,0.12);
+    --violet:#8B7FD1;
+    --text:#F2EFEA;
+    --text-muted:#8B8D97;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html,body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Inter',sans-serif;
+    max-width:480px;
+    margin:0 auto;
+    min-height:100vh;
+    overflow-x:hidden;
+    position:relative;
+  }
+  body{
+    background-image:
+      radial-gradient(circle at 50% 0%, rgba(201,169,106,0.08), transparent 45%),
+      radial-gradient(circle at 100% 20%, rgba(139,127,209,0.06), transparent 40%);
+  }
+  .screen{display:none;min-height:100vh;padding-bottom:120px;}
+  .screen.active{display:block;}
+
+  /* Splash */
+  #splash{
+    position:fixed;inset:0;background:var(--bg);
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    z-index:999;transition:opacity .5s ease;
+  }
+  #splash h1{
+    font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:2.6rem;
+    letter-spacing:0.02em;
+    background:linear-gradient(90deg,var(--gold),#E8D8B0,var(--gold));
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+    text-shadow:0 0 40px rgba(201,169,106,0.35);
+    animation:glowPulse 1.8s ease-in-out infinite;
+  }
+  #splash .spark{width:2px;height:38px;background:linear-gradient(var(--gold),transparent);margin-top:14px;animation:growLine 2s ease forwards;}
+  @keyframes glowPulse{0%,100%{filter:brightness(1);}50%{filter:brightness(1.3);}}
+  @keyframes growLine{from{height:0;}to{height:38px;}}
+
+  /* Hero */
+  .hero{padding:56px 24px 32px;text-align:center;position:relative;}
+  .wordmark{
+    font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:2.4rem;
+    letter-spacing:-0.01em;color:var(--text);
+  }
+  .wordmark span{color:var(--gold);}
+  .tagline{
+    margin-top:8px;font-size:0.8rem;color:var(--text-muted);
+    letter-spacing:0.02em;
+  }
+  .tagline b{color:var(--gold);font-weight:500;}
+  .yt-link{
+    display:inline-flex;align-items:center;gap:8px;margin-top:20px;
+    padding:9px 18px;border:1px solid var(--border);
+    background:var(--surface);color:var(--text);
+    text-decoration:none;font-family:'JetBrains Mono',monospace;font-size:0.72rem;
+    letter-spacing:0.03em;clip-path:polygon(10px 0,100% 0,100% calc(100% - 10px),calc(100% - 10px) 100%,0 100%,0 10px);
+    transition:border-color .2s ease, box-shadow .2s ease;
+  }
+  .yt-link:active{border-color:var(--gold);box-shadow:0 0 16px rgba(201,169,106,0.25);}
+
+  /* current line signature */
+  .current-line{
+    width:1px;height:36px;margin:24px auto 0;
+    background:linear-gradient(var(--gold),transparent);
+  }
+
+  /* Grid */
+  .grid{
+    display:grid;grid-template-columns:1fr 1fr;gap:12px;
+    padding:0 20px;margin-top:8px;
+  }
+  .card{
+    background:var(--surface);border:1px solid var(--border);
+    padding:20px 14px;text-align:left;cursor:pointer;
+    clip-path:polygon(0 0,calc(100% - 14px) 0,100% 14px,100% 100%,14px 100%,0 calc(100% - 14px));
+    position:relative;overflow:hidden;
+    transition:transform .15s ease, border-color .2s ease, background .2s ease;
+  }
+  .card::before{
+    content:'';position:absolute;top:0;left:0;width:3px;height:100%;
+    background:var(--gold);opacity:0;transition:opacity .2s ease;
+  }
+  .card:active{transform:scale(0.97);border-color:var(--gold);background:var(--surface-2);}
+  .card:active::before{opacity:1;}
+  .card .icon{font-size:1.5rem;display:block;margin-bottom:10px;}
+  .card .label{
+    font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:0.86rem;
+    line-height:1.25;color:var(--text);
+  }
+  .card .node{
+    position:absolute;bottom:10px;right:10px;width:5px;height:5px;
+    background:var(--gold);border-radius:50%;box-shadow:0 0 6px var(--gold);
+  }
+
+  /* Credits bar */
+  .credits{
+    margin:24px 20px 0;padding:12px 16px;background:var(--gold-soft);
+    border:1px solid rgba(201,169,106,0.25);
+    display:flex;justify-content:space-between;align-items:center;
+    font-family:'JetBrains Mono',monospace;font-size:0.72rem;color:var(--gold);
+  }
+  .credits button{
+    background:var(--gold);color:var(--bg);border:none;padding:5px 10px;
+    font-family:'JetBrains Mono',monospace;font-size:0.65rem;font-weight:500;
+    cursor:pointer;
+  }
+
+  /* Auth */
+  .auth{margin:32px 20px 0;padding:22px;background:var(--surface);border:1px solid var(--border);}
+  .auth h3{font-family:'Space Grotesk',sans-serif;font-size:1rem;margin-bottom:4px;}
+  .auth p{font-size:0.78rem;color:var(--text-muted);margin-bottom:18px;}
+  .tabs{display:flex;gap:6px;margin-bottom:16px;}
+  .tab{flex:1;padding:8px;text-align:center;font-size:0.72rem;font-family:'JetBrains Mono',monospace;
+    background:var(--surface-2);border:1px solid var(--border);color:var(--text-muted);cursor:pointer;}
+  .tab.active{color:var(--gold);border-color:var(--gold);}
+  .auth input{
+    width:100%;padding:12px;margin-bottom:10px;background:var(--bg);
+    border:1px solid var(--border);color:var(--text);font-family:'Inter',sans-serif;font-size:0.85rem;
+  }
+  .auth input:focus{outline:none;border-color:var(--gold);}
+  .btn-primary{
+    width:100%;padding:13px;background:var(--gold);color:var(--bg);border:none;
+    font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:0.85rem;cursor:pointer;
+    margin-top:4px;
+  }
+  .btn-google{
+    width:100%;padding:12px;background:transparent;border:1px solid var(--border);color:var(--text);
+    font-family:'Inter',sans-serif;font-size:0.82rem;cursor:pointer;margin-top:8px;
+    display:flex;align-items:center;justify-content:center;gap:8px;
+  }
+
+  /* Banner ad */
+  .banner-ad{
+    position:fixed;bottom:0;left:50%;transform:translateX(-50%);
+    width:100%;max-width:480px;height:60px;background:var(--surface-2);
+    border-top:1px solid var(--border);
+    display:flex;align-items:center;justify-content:center;
+    font-family:'JetBrains Mono',monospace;font-size:0.65rem;color:var(--text-muted);
+    z-index:50;
+  }
+
+  /* Sub-activity screens */
+  .topbar{
+    display:flex;align-items:center;gap:14px;padding:20px;
+    border-bottom:1px solid var(--border);
+  }
+  .back{
+    width:34px;height:34px;background:var(--surface);border:1px solid var(--border);
+    display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--gold);
+  }
+  .topbar h2{font-family:'Space Grotesk',sans-serif;font-size:1.05rem;}
+  .content{padding:24px 20px;}
+  .placeholder-box{
+    background:var(--surface);border:1px dashed var(--border);
+    padding:40px 20px;text-align:center;color:var(--text-muted);font-size:0.82rem;
+    margin-bottom:20px;
+  }
+  .result-actions{display:flex;gap:10px;margin-top:16px;}
+  .result-actions button{
+    flex:1;padding:12px;font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:0.8rem;
+    border:1px solid var(--border);background:var(--surface);color:var(--text);cursor:pointer;
+  }
+  .result-actions button.primary{background:var(--gold);color:var(--bg);border:none;}
+</style>
+</head>
+<body>
+
+<div id="splash">
+  <h1>HACK AI</h1>
+  <div class="spark"></div>
+</div>
+
+<!-- DASHBOARD -->
+<div class="screen active" id="dashboard">
+  <div class="hero">
+    <div class="wordmark">Hack<span> AI</span></div>
+    <div class="tagline">Built with ❤️ <b>Prince Laghari</b></div>
+    <a class="yt-link" href="https://youtube.com/@HaqeeqatAi" target="_blank">▶ YouTube Channel — Haqeeqat Ai</a>
+    <div class="current-line"></div>
+  </div>
+
+  <div class="credits">
+    <span>CREDITS: <strong>12</strong></span>
+    <button onclick="openScreen('rewarded')">+ GET MORE</button>
+  </div>
+
+  <div class="grid">
+    <div class="card" onclick="openScreen('video')"><span class="icon">🎥</span><span class="label">Videos Generator Free</span><span class="node"></span></div>
+    <div class="card" onclick="openScreen('image')"><span class="icon">🖼️</span><span class="label">Image Generator Free</span><span class="node"></span></div>
+    <div class="card" onclick="openScreen('song')"><span class="icon">🎵</span><span class="label">Song Generator Free</span><span class="node"></span></div>
+    <div class="card" onclick="openScreen('prompt')"><span class="icon">⚡</span><span class="label">Master Prompt Generator</span><span class="node"></span></div>
+    <div class="card" onclick="openScreen('upscale')"><span class="icon">🔍</span><span class="label">Photo with Upscale</span><span class="node"></span></div>
+    <div class="card" onclick="openScreen('storymap')"><span class="icon">🗺️</span><span class="label">Map for Storyline Prompt</span><span class="node"></span></div>
+  </div>
+
+  <div class="auth">
+    <h3>Sign in to Hack AI</h3>
+    <p>Sync credits & history across devices</p>
+    <div class="tabs">
+      <div class="tab active" onclick="setTab(this,'email')">EMAIL</div>
+      <div class="tab" onclick="setTab(this,'phone')">PHONE</div>
+    </div>
+    <div id="tab-email">
+      <input type="email" placeholder="Email address">
+      <input type="password" placeholder="Password">
+    </div>
+    <div id="tab-phone" style="display:none">
+      <input type="tel" placeholder="+92 300 1234567">
+    </div>
+    <button class="btn-primary">Continue</button>
+    <button class="btn-google">🔵 Continue with Google</button>
+  </div>
+</div>
+
+<!-- SUB SCREENS (each = one "activity") -->
+<div class="screen" id="video">
+  <div class="topbar"><div class="back" onclick="openScreen('dashboard')">←</div><h2>Videos Generator</h2></div>
+  <div class="content">
+    <div class="placeholder-box">Duration: 4s / 6s / 8s / 10s · Ratio: 9:16<br>Opens Google Flow with your Google login</div>
+    <a class="btn-primary" style="display:block;text-align:center;text-decoration:none;" href="https://labs.google/fx/tools/flow" target="_blank">Open Google Flow →</a>
+  </div>
+</div>
+
+<div class="screen" id="image">
+  <div class="topbar"><div class="back" onclick="openScreen('dashboard')">←</div><h2>Image Generator</h2></div>
+  <div class="content">
+    <div class="placeholder-box">4 images per generation<br>Opens Google Flow with your Google login</div>
+    <a class="btn-primary" style="display:block;text-align:center;text-decoration:none;" href="https://labs.google/fx/tools/flow" target="_blank">Open Google Flow →</a>
+  </div>
+</div>
+
+<div class="screen" id="song">
+  <div class="topbar"><div class="back" onclick="openScreen('dashboard')">←</div><h2>Song Generator</h2></div>
+  <div class="content">
+    <div class="placeholder-box">AI music studio<br>Opens Google Flow Music with your Google login</div>
+    <a class="btn-primary" style="display:block;text-align:center;text-decoration:none;" href="https://labs.google/fx/tools/music-fx" target="_blank">Open Flow Music →</a>
+  </div>
+</div>
+
+<div class="screen" id="prompt">
+  <div class="topbar"><div class="back" onclick="openScreen('dashboard')">←</div><h2>Master Prompt Generator</h2></div>
+  <div class="content">
+    <div class="placeholder-box">Chat with Gemini to build your prompt<br>Opens Gemini with your Google login</div>
+    <a class="btn-primary" style="display:block;text-align:center;text-decoration:none;" href="https://gemini.google.com" target="_blank">Open Gemini →</a>
+  </div>
+</div>
+
+<div class="screen" id="upscale">
+  <div class="topbar"><div class="back" onclick="openScreen('dashboard')">←</div><h2>Photo Upscale</h2></div>
+  <div class="content">
+    <div class="placeholder-box">2x / 4x / 8x · before/after slider<br>API hookup pending</div>
+    <button class="btn-primary">Upload & Upscale</button>
+    <div class="result-actions">
+      <button>⬇️ Download</button><button class="primary">✏️ Re-edit</button>
+    </div>
+  </div>
+</div>
+
+<div class="screen" id="storymap">
+  <div class="topbar"><div class="back" onclick="openScreen('dashboard')">←</div><h2>Story Map</h2></div>
+  <div class="content">
+    <div class="placeholder-box">Scene-by-scene timeline · click a scene to send to Video/Image<br>API hookup pending</div>
+    <button class="btn-primary">Generate Story Map</button>
+  </div>
+</div>
+
+<div class="screen" id="rewarded">
+  <div class="topbar"><div class="back" onclick="openScreen('dashboard')">←</div><h2>Earn Credits</h2></div>
+  <div class="content">
+    <div class="placeholder-box">Watch a rewarded ad to earn +5 credits<br>AdMob rewarded unit pending</div>
+    <button class="btn-primary">Watch Ad</button>
+  </div>
+</div>
+
+<div class="banner-ad">AdMob Banner — 320×50 placeholder</div>
+
+<script>
+  setTimeout(()=>{
+    document.getElementById('splash').style.opacity='0';
+    setTimeout(()=>document.getElementById('splash').remove(),500);
+  },2000);
+
+  function openScreen(id){
+    document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    window.scrollTo(0,0);
+  }
+  function setTab(el,which){
+    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+    el.classList.add('active');
+    document.getElementById('tab-email').style.display = which==='email' ? 'block':'none';
+    document.getElementById('tab-phone').style.display = which==='phone' ? 'block':'none';
+  }
+</script>
+</body>
+</html>
